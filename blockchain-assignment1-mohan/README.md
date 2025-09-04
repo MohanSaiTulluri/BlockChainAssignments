@@ -13,6 +13,8 @@ It demonstrates **Proof-of-Work mining**, **transaction handling**, and **immuta
    node -v
    npm -v
    ```
+   <img width="619" height="81" alt="image" src="https://github.com/user-attachments/assets/72df0717-75b8-4423-8094-aadf03ffef1c" />
+
 
 2. Clone this repository or download the `blockchain.js` file.
 
