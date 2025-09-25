@@ -9,31 +9,52 @@ const CHAIN_ID = Number(process.env.CHAIN_ID!);
 const PRIVATE_KEY_RAW = (process.env.PRIVATE_KEY || "").replace(/^0x/, "");
 
 // Paste your deployed address:
-const TOKEN = "<PASTE_DEPLOYED_ADDRESS>";
-const DECIMALS = 18n;
+const TOKEN = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
+const DECIMALS = 18;
 
 // Optional: set a second recipient via env to see balances move
 const ACCT2 = (process.env.ACCT2 || "").trim();
 
 async function main() {
   if (!RPC_URL || !CHAIN_ID || !PRIVATE_KEY_RAW) throw new Error("Missing envs");
-  if (!TOKEN || TOKEN === "<PASTE_DEPLOYED_ADDRESS>") throw new Error("Set TOKEN in scripts/interact.ts");
+  if (!TOKEN || TOKEN == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266") throw new Error("Set TOKEN in scripts/interact.ts");
 
-  const { abi } = await artifacts.readArtifact("CampusCredit");
-  const chain = { id: CHAIN_ID, name: `didlab-${CHAIN_ID}`, nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 }, rpcUrls: { default: { http: [RPC_URL] } } };
+ const { abi } = await artifacts.readArtifact("CampusCredit");
+const chain = { 
+  id: CHAIN_ID, 
+  name: `didlab-${CHAIN_ID}`, 
+  nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 }, 
+  rpcUrls: { default: { http: [RPC_URL] } } 
+};
 
-  const account = privateKeyToAccount(`0x${PRIVATE_KEY_RAW}`);
-  const wallet = createWalletClient({ account, chain, transport: http(RPC_URL) });
-  const publicClient = createPublicClient({ chain, transport: http(RPC_URL) });
+const account = privateKeyToAccount(`0x${PRIVATE_KEY_RAW}`);
+const wallet = createWalletClient({ account, chain, transport: http(RPC_URL) });
+const publicClient = createPublicClient({ chain, transport: http(RPC_URL) });
 
-  // Use teammate’s address if provided; otherwise self (for demo)
-  const acct2 = ACCT2 || account.address;
+// Use teammate’s address if provided; otherwise self (for demo)
+const acct2 = ACCT2 || account.address;
 
-  const balances = async (label: string) => {
-    const b1 = await publicClient.readContract({ address: getAddress(TOKEN), abi, functionName: "balanceOf", args: [account.address] });
-    const b2 = await publicClient.readContract({ address: getAddress(TOKEN), abi, functionName: "balanceOf", args: [acct2] });
-    console.log(`${label} | Deployer: ${formatUnits(b1 as bigint, DECIMALS)} CAMP | Acct2: ${formatUnits(b2 as bigint, DECIMALS)} CAMP`);
-  };
+const balances = async (label: string) => {
+  const b1 = await publicClient.readContract({
+    address: getAddress(TOKEN),
+    abi,
+    functionName: "balanceOf",
+    args: [account.address],
+  });
+  const b2 = await publicClient.readContract({
+    address: getAddress(TOKEN),
+    abi,
+    functionName: "balanceOf",
+    args: [acct2],
+  });
+  console.log(
+    `${label} | Deployer: ${formatUnits(
+      b1 as bigint,
+      DECIMALS
+    )} CAMP | Acct2: ${formatUnits(b2 as bigint, DECIMALS)} CAMP`
+  );
+};
+
 
   await balances("Before");
 

@@ -6,9 +6,9 @@ const CHAIN_ID = Number(process.env.CHAIN_ID!);
 
 // Paste from interact output
 const HASHES = {
-  tx1: "<TX_HASH_1>",
-  tx2: "<TX_HASH_2>",
-  tx3: "<TX_HASH_3>",
+  tx1: "0xe3b49d46a97298afefe138b5ccbfa4f265c4fd85f45cc413d2a58e2d7ace8343",
+  tx2: "0x36ec440fbfe45e76b9bdea03ed03d0c14cff2ca7e6c6d0309fedd93496cce443",
+  tx3: "0xf0a479b045dc90d8f247f83f17f0c3c9ac99ed2a2aa10647aafb32c2d5677909",
 };
 
 async function analyze(hash: `0x${string}`, abi: any) {
