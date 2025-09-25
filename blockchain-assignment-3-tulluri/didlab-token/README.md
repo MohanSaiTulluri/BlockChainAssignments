@@ -1,96 +1,177 @@
-# DIDLab ERC-20 Assignment (Team-10)
+# Activity 3 — Build, Deploy & Operate a Production-Style ERC-20 on DIDLab
 
-This project implements a production-style ERC-20 token on the DIDLab Hardhat network.
+This project demonstrates how to scaffold, build, deploy, and operate a **gas-aware ERC-20 token** (`CampusCreditV2`) on the DIDLab private Ethereum testnet. It uses **Hardhat v3 (ESM)** with **Viem** and includes scripts for deployment, transfers, approvals, airdrops, and log queries.
 
-## Requirements
-- Node.js v22.x
-- Hardhat v3 (ESM)
-- Viem client
-- OpenZeppelin v5
+---
 
-## Setup
+## 📋 Requirements
 
-1. **Clone / unzip project**
+- Node.js **22.x LTS**  
+- npm  
+- Git  
+- VS Code  
+- MetaMask  
+
+> ⚠️ Do not install `hardhat-gas-reporter` (it conflicts with Hardhat v3).
+
+---
+
+## 🚀 Setup
+
+### 1. Clone & Initialize Project
 
 ```bash
-unzip didlab-token-complete.zip
-cd didlab-token
-```
+mkdir -p ~/didlab-activity3 && cd ~/didlab-activity3
+npm init -y
 
-2. **Install dependencies**
 
-```bash
-npm install
-```
+Install dependencies:
 
-3. **Set environment variables**
+npm i -D hardhat@^3 \
+  @nomicfoundation/hardhat-toolbox-viem@^5 \
+  @nomicfoundation/hardhat-ignition@^3 \
+  typescript@~5.8.0 \
+  viem@^2.30.0 \
+  @types/node@^22.8.5
 
-Edit `.env` with your team-10 details:
+npm i dotenv @openzeppelin/contracts@^5
 
-```env
-RPC_URL=https://hh-10.didlab.org
-CHAIN_ID=31346
-PRIVATE_KEY=YOUR_TEAM10_FAUCET_PRIVATE_KEY
+
+Initialize Hardhat:
+
+npx hardhat --init
+
+
+Choose:
+
+Version: hardhat-3
+
+Project type: node-test-runner-viem
+
+ESM: Yes
+
+2. Configure Environment
+
+Create a .env file:
+
+RPC_URL=
+CHAIN_ID=
+PRIVATE_KEY=
+
+# Optional token params
 TOKEN_NAME=CampusCredit
 TOKEN_SYMBOL=CAMP
 TOKEN_CAP=2000000
 TOKEN_INITIAL=1000000
-TOKEN_ADDRESS=   # will be filled after deploy
-```
 
-## Commands
 
-### Compile
-```bash
+Append your DIDLab values:
+
+echo "RPC_URL=$RPC_URL" >> .env
+echo "CHAIN_ID=$CHAIN_ID" >> .env
+echo "PRIVATE_KEY=$PRIVATE_KEY" >> .env
+
+3. Hardhat Config
+
+Update hardhat.config.ts to include DIDLab network (see doc for full code).
+
+📜 Smart Contract
+
+contracts/CampusCreditV2.sol
+
+Implements:
+
+Cap enforcement
+
+Pausable transfers
+
+Roles (ADMIN, MINTER, PAUSER)
+
+Batch airdrop with gas optimizations
+
+Custom errors
+
+Compile:
+
 npx hardhat compile
-```
 
-### Deploy
-```bash
-node ./scripts/deploy.mjs
-```
-- Copy the printed contract address into `.env` as `TOKEN_ADDRESS`.
+📦 Deployment
 
-### Transfer + Approve
-```bash
-node ./scripts/transferApprove.mjs
-```
-- Outputs balances before/after, tx hashes, gas used.
+Deploy with:
 
-### Airdrop vs Singles (Gas Comparison)
-```bash
-node ./scripts/airdropCompare.mjs
-```
-- Prints gas used by batch vs multiple single transfers.
+npx hardhat run scripts/deploy.ts --network didlab
 
-### Logs & Events
-```bash
-node ./scripts/logsEvents.mjs
-```
-- Queries past 2000 blocks for `Transfer` and `Approval` events.
 
-## MetaMask Setup
+Copy printed contract address into .env:
 
-1. Add Network:
-   - Name: `DIDLab Team 10`
-   - RPC URL: `https://hh-10.didlab.org`
-   - Chain ID: `31346`
-   - Currency: `ETH`
+echo "TOKEN_ADDRESS=0x..." >> .env
 
-2. Import Account: use your faucet private key.
+🔧 Interaction Scripts
 
-3. Import Token: use deployed contract address.
+Transfer & Approve → scripts/transfer-approve.ts
 
-4. Send a transfer in MetaMask, take screenshots for submission.
+Batch Airdrop & Gas Compare → scripts/airdrop.ts
 
-## Submission Checklist
-- `contracts/TeamToken.sol`
-- `hardhat.config.mjs`
-- `package.json`
-- `.env.example`
-- `scripts/*.mjs`
-- `README.md`
-- Console outputs: `deploy.txt`, `transfer.txt`, `airdrop.txt`, `logs.txt`
-- MetaMask screenshots
-- Short write-up (≤1 page) about cap/pause/roles + gas efficiency.
+Logs & Events Query → scripts/logs-query.ts
 
+Run examples:
+
+npx hardhat run scripts/transfer-approve.ts --network didlab
+npx hardhat run scripts/airdrop.ts --network didlab
+npx hardhat run scripts/logs-query.ts --network didlab
+
+🦊 MetaMask Setup
+
+Add a Custom Network
+
+RPC: https://hh-XX.didlab.org
+
+Chain ID: your CHAIN_ID
+
+Currency: ETH
+
+Import account (class faucet private key).
+
+Import token using your deployed TOKEN_ADDRESS.
+
+📑 NPM Shortcuts (optional)
+
+Add to package.json:
+
+"scripts": {
+  "compile": "hardhat compile",
+  "deploy": "hardhat run scripts/deploy.ts --network didlab",
+  "xfer": "hardhat run scripts/transfer-approve.ts --network didlab",
+  "airdrop": "hardhat run scripts/airdrop.ts --network didlab",
+  "logs": "hardhat run scripts/logs-query.ts --network didlab"
+}
+
+
+Run with:
+
+npm run deploy
+npm run xfer
+npm run airdrop
+npm run logs
+
+🛠 Troubleshooting
+
+Node 18 errors → use Node 22.x
+
+solc mismatch → keep Solidity at 0.8.24
+
+BigInt errors → use parseUnits("100", 18n)
+
+RPC mismatch → check with curl $RPC_URL
+
+📤 Deliverables
+
+Submit:
+
+TOKEN_ADDRESS, deploy block, roles, cap.
+
+Screenshot of MetaMask with custom network + token.
+
+Console output from airdrop.ts (batch vs singles gas).
+
+Short note on why your airdrop is gas-aware.
