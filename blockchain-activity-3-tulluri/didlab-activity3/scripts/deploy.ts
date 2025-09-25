@@ -30,18 +30,18 @@ async function main() {
   // Define chain for viem client
   const chain = {
     id: CHAIN_ID,
-    name: didlab-${CHAIN_ID},
+    name: `didlab-${CHAIN_ID}`,
     nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
     rpcUrls: { default: { http: [RPC_URL] } },
   } as const;
 
-  const account = privateKeyToAccount(0x${PRIVATE_KEY});
+  const account = privateKeyToAccount(`0x${PRIVATE_KEY}`);
   const wallet = createWalletClient({ account, chain, transport: http(RPC_URL) });
   const publicClient = createPublicClient({ chain, transport: http(RPC_URL) });
 
   // Convert token numbers into 18-decimal units
-  const cap = parseUnits(CAP_HUMAN, 18n);
-  const initialMint = parseUnits(INIT_HUMAN, 18n);
+  const cap = parseUnits(CAP_HUMAN, 18);
+  const initialMint = parseUnits(INIT_HUMAN, 18);
 
   console.log("🚀 Deploying CampusCreditV2...");
   const hash = await wallet.deployContract({
@@ -58,10 +58,11 @@ async function main() {
   console.log("✅ Deployed at:", rcpt.contractAddress);
   console.log("📦 Block:", rcpt.blockNumber);
 
-  console.log(\n👉 Add this to .env:\nTOKEN_ADDRESS=${rcpt.contractAddress}\n);
+  console.log(`\n👉 Add this to .env:\nTOKEN_ADDRESS=${rcpt.contractAddress}\n`);
 }
 
 main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+
