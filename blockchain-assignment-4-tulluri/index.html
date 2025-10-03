@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DIDLab Minimal DApp</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: linear-gradient(90deg, #4b6cb7, #182848);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.8em;
+    }
+    main {
+      max-width: 700px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+    section {
+      margin-bottom: 25px;
+    }
+    h2 {
+      font-size: 1.3em;
+      color: #182848;
+      margin-bottom: 10px;
+    }
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1em;
+    }
+    button {
+      background: #4b6cb7;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #36508c;
+    }
+    #balance {
+      font-weight: bold;
+      font-size: 1.2em;
+      color: #27ae60;
+    }
+    #txInfo {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f0f8ff;
+      border: 1px solid #b0c4de;
+      border-radius: 6px;
+      font-size: 0.95em;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DIDLab Minimal DApp</h1>
+  </header>
+  <main>
+    <section>
+      <button id="connectButton">🔗 Connect & Switch Network</button>
+    </section>
+
+    <section>
+      <h2>Token</h2>
+      <label>Token Address:</label>
+      <input id="tokenAddress" type="text" placeholder="Enter token address">
+      <button id="loadToken">📥 Load Token</button>
+      <div id="tokenInfo"></div>
+    </section>
+
+    <section>
+      <h2>Balance</h2>
+      <div>Wallet Balance: <span id="balance">0</span></div>
+      <button id="refreshBalance">🔄 Refresh Balance</button>
+    </section>
+
+    <section>
+      <h2>Transfer</h2>
+      <label>Recipient Address:</label>
+      <input id="recipient" type="text" placeholder="0x...">
+      <label>Amount:</label>
+      <input id="amount" type="number" placeholder="0.0">
+      <button id="transferButton">💸 Send Tokens</button>
+      <div id="txInfo"></div>
+    </section>
+
+    <section>
+      <button id="addToWallet">➕ Add Token to MetaMask</button>
+    </section>
+  </main>
+
+  <script type="module">
+    import { createWalletClient, createPublicClient, custom, formatUnits, parseUnits } from "https://esm.sh/viem";
+
+    let walletClient;
+    let publicClient;
+    let tokenAddress;
+    let decimals = 18;
+    let symbol = "";
+
+    const connectButton = document.getElementById("connectButton");
+    const loadTokenButton = document.getElementById("loadToken");
+    const refreshButton = document.getElementById("refreshBalance");
+    const transferButton = document.getElementById("transferButton");
+    const addToWalletButton = document.getElementById("addToWallet");
+
+    connectButton.onclick = async () => {
+      if (!window.ethereum) {
+        alert("Please install MetaMask!");
+        return;
+      }
+      walletClient = createWalletClient({
+        transport: custom(window.ethereum)
+      });
+
+      const accounts = await walletClient.request({ method: 'eth_requestAccounts' });
+      console.log("Connected account:", accounts[0]);
+
+      await walletClient.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: "0x7a69", // Replace with your DIDLab chainId in hex
+          chainName: "DIDLab Team Chain",
+          rpcUrls: ["https://hh-XX.didlab.org"],
+          nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 }
+        }]
+      });
+
+      publicClient = createPublicClient({ transport: custom(window.ethereum) });
+    };
+
+    loadTokenButton.onclick = async () => {
+      tokenAddress = document.getElementById("tokenAddress").value;
+      localStorage.setItem("tokenAddress", tokenAddress);
+      document.getElementById("tokenInfo").innerText = "Token loaded: " + tokenAddress;
+    };
+
+    refreshButton.onclick = async () => {
+      document.getElementById("balance").innerText = "Loading...";
+    };
+
+    transferButton.onclick = async () => {
+      const recipient = document.getElementById("recipient").value;
+      const amount = document.getElementById("amount").value;
+      document.getElementById("txInfo").innerText = `Transfer submitted → To: ${recipient}, Amount: ${amount}`;
+    };
+
+    addToWalletButton.onclick = async () => {
+      await walletClient.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20',
+          options: {
+            address: tokenAddress,
+            symbol: symbol || "TKN",
+            decimals: decimals
+          }
+        }
+      });
+    };
+  </script>
+</body>
+</html>
