@@ -1,57 +1,80 @@
-# Sample Hardhat 3 Beta Project (`node:test` and `viem`)
+# 🪙 DIDLab Activity 3: CampusCreditV2 - Production-Style ERC-20
 
-This project showcases a Hardhat 3 Beta project using the native Node.js test runner (`node:test`) and the `viem` library for Ethereum interactions.
+## Overview
+This repository contains the solution for **DIDLab Activity 3**, which involves building, deploying, and operating a production-style **ERC-20 token** named **CampusCreditV2** on the dedicated **DIDLab chain**.
 
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+The project is scaffolded using **Hardhat v3 (ESM)** and **Viem**. The contract is designed to be gas-aware and includes essential features like **capping**, **pausing**, and **role-based access control**, along with a custom **batch airdrop** function.
 
-## Project Overview
+---
 
-This example project includes:
+## 🚀 Getting Started
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using [`node:test`](nodejs.org/api/test.html), the new Node.js native test runner, and [`viem`](https://viem.sh/).
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+### Prerequisites
+Ensure your system meets these requirements:
+* **Node 22.x (LTS)**
+* **npm**
+* **Git**
+* **VS Code**
+* **MetaMask**
 
-## Usage
+### Setup and Environment Configuration
 
-### Running Tests
+1.  **Clone and Initialize:**
+    ```bash
+    mkdir -p ~/didlab-activity3 && cd ~/didlab-activity3
+    node -v # Must be 22.x
+    npm init -y
+    ```
 
-To run all the tests in the project, execute the following command:
+2.  **Install Dependencies:**
+    ```bash
+    npm i -D hardhat@^3 \
+      @nomicfoundation/hardhat-toolbox-viem@^5 \
+      @nomicfoundation/hardhat-ignition@^3 \
+      typescript@~5.8.0 \
+      viem@^2.30.0 \
+      @types/node@^22.8.5
+    npm i dotenv @openzeppelin/contracts@^5
+    ```
 
-```shell
-npx hardhat test
-```
+3.  **Initialize Hardhat:**
+    ```bash
+    npx hardhat --init
+    # Choose: hardhat-3, node-test-runner-viem, and ESM: Yes
+    ```
 
-You can also selectively run the Solidity or `node:test` tests:
+4.  **Set Environment Variables (`.env`):**
+    **ACTION REQUIRED:** **Replace `01` with your actual team number** and run the following in your shell to set and export the environment variables:
+    ```bash
+    # Set your team number (e.g., TEAM=05)
+    TEAM=01
+    export RPC_URL="https://hh-${TEAM}.didlab.org"
+    export CHAIN_ID=$((31336 + 10#$TEAM))
+    # Set your team's faucet private key (WARNING: do not use a real wallet key)
+    export PRIVATE_KEY="0x<your_team_private_key_no_quotes>" 
+    
+    # Create and populate the .env file with your variables and token details
+    cat > .env <<'EOF'
+    RPC_URL=$RPC_URL
+    CHAIN_ID=$CHAIN_ID
+    PRIVATE_KEY=$PRIVATE_KEY
+    # Optional deploy args 
+    TOKEN_NAME=CampusCredit
+    TOKEN_SYMBOL=CAMP
+    TOKEN_CAP=2000000 
+    TOKEN_INITIAL=1000000
+    EOF
+    ```
 
-```shell
-npx hardhat test solidity
-npx hardhat test nodejs
-```
+---
 
-### Make a deployment to Sepolia
+## 📝 Contract and Configuration
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
+### Hardhat Configuration (`hardhat.config.ts`)
+The configuration is set up for ESM, Viem, and includes a custom `didlab` network targeting the team's chain:
 
-To run the deployment to a local chain:
-
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
-```
-
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
-```
-
-After setting the variable, you can run the deployment with the Sepolia network:
-
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
+```typescript
+import "dotenv/config";
+import { defineConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-toolbox-viem";
+const RPC_URL = process.env
